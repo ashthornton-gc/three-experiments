@@ -22,12 +22,11 @@ if (module.hot) {
 // Three Scene
 let scene, camera, renderer, animationId, controls
 let uniforms, geometry, material, mesh
-let pointLight
 let startTime = Date.now()
 
 function init() {
     scene = new THREE.Scene()
-    scene.background = new THREE.Color( 0x444444 )
+    scene.background = new THREE.Color( 0x000000 )
 
     camera = new THREE.PerspectiveCamera(
         75,
@@ -35,38 +34,26 @@ function init() {
         1,
         100
     )
-    camera.position.z = 25
-    camera.position.y = 10;
+    camera.position.z = 15
+    camera.position.x = -1
+    camera.position.y = -1
 
     controls = new OrbitControls( camera )
 
-    uniforms = THREE.UniformsUtils.merge( [
-        {
-            tex: { type: 't', value: new THREE.TextureLoader().load( 'images/lat.jpg' ) },
-            time: { type: 'f', value: 1.0 }
-        },
-        // THREE.UniformsLib.lights
-    ])
+    uniforms = {
+        tWater: { type: 't', value: new THREE.TextureLoader().load( 'images/water.png' ) },
+        time: { type: 'f', value: 1.0 }
+    }
 
-    geometry = new THREE.SphereGeometry(1, 250, 250)
+    geometry = new THREE.PlaneGeometry(15, 15, 250, 250)
     material = new THREE.ShaderMaterial({
         uniforms: uniforms,
         fragmentShader: frag,
-        vertexShader: vert,
-        // lights: true
+        vertexShader: vert
     })
 
     mesh = new THREE.Mesh(geometry, material)
-    // mesh.castShadow = true
-    // mesh.receiveShadow = true
     scene.add(mesh)
-
-    pointLight = new THREE.PointLight( 0xFFFFFF, 1, 1, )
-    pointLight.position.set( 0, 20, 0 )
-    pointLight.lookAt( mesh )
-    pointLight.castShadow = true
-    scene.add( pointLight )
-    // scene.add( new THREE.PointLightHelper( pointLight ) )
 
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
 
