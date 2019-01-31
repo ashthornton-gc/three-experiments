@@ -32,7 +32,8 @@ THREEx.GeometryWobble.init	= function(geometry)
 		vertex.dirVector	= vertex.clone().normalize();
 	}
 	geometry.dynamic	= true;
-	
+    
+    
 	this.cpuAxis(geometry, 'y')
 	// this.cpuAxis(geometry, 'z')
 }
