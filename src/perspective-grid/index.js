@@ -84,11 +84,13 @@ class PerspectiveGrid {
 
         this.items = []
 
-        for( let i = 0; i < 6; i++ ) {
+        let x = 0
+
+        for( let i = 0; i < 30; i++ ) {
 
             this.items[i] = {}
 
-            this.items[i].video = new THREE.VideoTexture( document.getElementById( 'vid' + i ) )
+            this.items[i].video = new THREE.VideoTexture( document.getElementById( 'vid' + x ) )
             this.items[i].video.minFilter = this.items[i].video.magFilter = THREE.LinearFilter        
 
             this.items[i].uniforms = {
@@ -96,7 +98,8 @@ class PerspectiveGrid {
                 fogColor: { type: "c", value: this.scene.fog.color },
                 fogNear: { type: "f", value: this.scene.fog.near },
                 fogFar: { type: "f", value: this.scene.fog.far },
-                video: { type: 't', value: this.items[i].video }
+                video: { type: 't', value: this.items[i].video },
+                opacity: { type: 'f', value: 1.0 }
             }
 
             this.items[i].geometry = new THREE.PlaneGeometry( 1, 1 )
@@ -104,7 +107,8 @@ class PerspectiveGrid {
                 uniforms: this.items[i].uniforms,
                 fragmentShader: frag,
                 vertexShader: vert,
-                fog: true
+                fog: true,
+                transparent: true
             })
 
             this.items[i].mesh = new THREE.Mesh( this.items[i].geometry, this.items[i].material )
@@ -113,51 +117,77 @@ class PerspectiveGrid {
 
             let align = i % 4, pos = new THREE.Vector2()
 
-            if( align === 0 ) pos.set( -250, 250 ) // bottom left
-            if( align === 1 ) pos.set( 250, 250 ) // bottom right
-            if( align === 2 ) pos.set( 250, -250 ) // top right
-            if( align === 3 ) pos.set( -250, -250 ) // top left
+            if( align === 0 ) pos.set( -300, 300 ) // bottom left
+            if( align === 1 ) pos.set( 300, 300 ) // bottom right
+            if( align === 2 ) pos.set( 300, -300 ) // top right
+            if( align === 3 ) pos.set( -300, -300 ) // top left
 
             this.items[i].mesh.position.set( pos.x, pos.y, i * -300 )
+            this.items[i].origPos = new THREE.Vector2( pos.x, pos.y )
 
             this.items[i].mesh.callback = () => {
 
-                TweenMax.to( this.items[i].mesh.position, 1.5, {
-                    x: 0,
-                    y: 0,
-                    ease: 'Expo.easeInOut'
-                })
+                if( this.items[i].active ) {
 
-                TweenMax.to( this.grid.position, 1.5, {
-                    z: -this.items[i].mesh.position.z + 100,
-                    ease: 'Expo.easeInOut'
-                })
+                    TweenMax.to( this.items[i].mesh.position, 1.5, {
+                        x: this.items[i].origPos.x,
+                        y: this.items[i].origPos.y,
+                        ease: 'Expo.easeInOut'
+                    })
 
-                this.items.forEach( item => {
+                    TweenMax.to( this.grid.position, 1.5, {
+                        z: this.origGridPos,
+                        ease: 'Expo.easeInOut'
+                    })
 
-                    if( item === this.items[i] ) return
-
-                    if( item.mesh.position.z > -this.grid.position.z ) {
-
-                        TweenMax.to( item.mesh.position, 1.5, {
-                            z: '+=' + this.grid.position.z,
+                    this.items.forEach( item => {
+    
+                        if( item === this.items[i] ) return
+    
+                        TweenMax.to( item.material.uniforms.opacity, 1.5, {
+                            value: 1,
                             ease: 'Expo.easeInOut'
                         })
+    
+                    })
 
-                    } else {
+                    this.items[i].active = false
 
-                        TweenMax.to( item.mesh.position, 1.5, {
-                            z: '-=' + this.grid.position.z,
+                } else {
+
+                    this.items[i].active = true
+                    this.origGridPos = this.grid.position.z
+
+                    TweenMax.to( this.items[i].mesh.position, 1.5, {
+                        x: 0,
+                        y: 0,
+                        ease: 'Expo.easeInOut'
+                    })
+    
+                    TweenMax.to( this.grid.position, 1.5, {
+                        z: -this.items[i].mesh.position.z + 200,
+                        ease: 'Expo.easeInOut'
+                    })
+    
+                    this.items.forEach( item => {
+    
+                        if( item === this.items[i] ) return
+    
+                        TweenMax.to( item.material.uniforms.opacity, 1.5, {
+                            value: 0,
                             ease: 'Expo.easeInOut'
                         })
+    
+                    })
 
-                    }
-
-                })
+                }
 
             }
 
             this.grid.add( this.items[i].mesh )
+
+            x++
+            if( x === 6 ) x = 0
 
         }
 
