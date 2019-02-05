@@ -144,7 +144,7 @@ function animate() {
         lights[2].position.y = 23
         lights[2].intensity = 1.3
     }
-    lights[2].position.x += 1
+    lights[2].position.x += 2
     lights[2].position.y -= 0.1
     lights[2].intensity -= 0.001
 
