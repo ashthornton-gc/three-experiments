@@ -64,7 +64,7 @@ class PerspectiveGrid {
 
         this.scene = new THREE.Scene()
         this.scene.background = new THREE.Color( 0x000000 )
-        this.scene.fog = new THREE.Fog( 0x000000, 1700, 2000);
+        this.scene.fog = new THREE.Fog( 0x000000, 1400, 2000);
 
         let cameraPosition = 900;
 
@@ -84,15 +84,19 @@ class PerspectiveGrid {
 
         this.items = []
 
-        for( let i = 0; i < 30; i++ ) {
+        for( let i = 0; i < 6; i++ ) {
 
             this.items[i] = {}
+
+            this.items[i].video = new THREE.VideoTexture( document.getElementById( 'vid' + i ) )
+            this.items[i].video.minFilter = this.items[i].video.magFilter = THREE.LinearFilter        
 
             this.items[i].uniforms = {
                 time: { type: 'f', value: 1.0 },
                 fogColor: { type: "c", value: this.scene.fog.color },
                 fogNear: { type: "f", value: this.scene.fog.near },
-                fogFar: { type: "f", value: this.scene.fog.far }
+                fogFar: { type: "f", value: this.scene.fog.far },
+                video: { type: 't', value: this.items[i].video }
             }
 
             this.items[i].geometry = new THREE.PlaneGeometry( 1, 1 )
@@ -105,12 +109,52 @@ class PerspectiveGrid {
 
             this.items[i].mesh = new THREE.Mesh( this.items[i].geometry, this.items[i].material )
 
-            this.items[i].mesh.scale.set( 300, 300, 1 )
-            this.items[i].mesh.position.set( i % 2 ? 300 : - 300, i % 2 ? 300 : - 300, i * -500 )
+            this.items[i].mesh.scale.set( 400, 300, 1 )
+
+            let align = i % 4, pos = new THREE.Vector2()
+
+            if( align === 0 ) pos.set( -250, 250 ) // bottom left
+            if( align === 1 ) pos.set( 250, 250 ) // bottom right
+            if( align === 2 ) pos.set( 250, -250 ) // top right
+            if( align === 3 ) pos.set( -250, -250 ) // top left
+
+            this.items[i].mesh.position.set( pos.x, pos.y, i * -300 )
 
             this.items[i].mesh.callback = () => {
-                console.log('im ' + i);
-                
+
+                TweenMax.to( this.items[i].mesh.position, 1.5, {
+                    x: 0,
+                    y: 0,
+                    ease: 'Expo.easeInOut'
+                })
+
+                TweenMax.to( this.grid.position, 1.5, {
+                    z: -this.items[i].mesh.position.z + 100,
+                    ease: 'Expo.easeInOut'
+                })
+
+                this.items.forEach( item => {
+
+                    if( item === this.items[i] ) return
+
+                    if( item.mesh.position.z > -this.grid.position.z ) {
+
+                        TweenMax.to( item.mesh.position, 1.5, {
+                            z: '+=' + this.grid.position.z,
+                            ease: 'Expo.easeInOut'
+                        })
+
+                    } else {
+
+                        TweenMax.to( item.mesh.position, 1.5, {
+                            z: '-=' + this.grid.position.z,
+                            ease: 'Expo.easeInOut'
+                        })
+
+                    }
+
+                })
+
             }
 
             this.grid.add( this.items[i].mesh )
@@ -223,4 +267,5 @@ class PerspectiveGrid {
 
 }
 
-const grid = new PerspectiveGrid();
+const grid = new PerspectiveGrid()
+window.grid = grid

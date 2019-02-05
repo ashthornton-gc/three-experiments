@@ -4,11 +4,12 @@ uniform float time;
 uniform vec3 fogColor;
 uniform float fogNear;
 uniform float fogFar;
+uniform sampler2D video;
 
 void main() {
 
 	vec2 uv = vUv;
-	gl_FragColor = vec4( vUv, 1, 1 );
+	gl_FragColor = texture2D( video, vUv );
 
 	#ifdef USE_FOG
 		#ifdef USE_LOGDEPTHBUF_EXT
