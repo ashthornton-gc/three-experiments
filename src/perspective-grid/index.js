@@ -37,7 +37,7 @@ class PerspectiveGrid {
         this.mouseDown = this.mouseDown.bind( this )
         addEventListener( 'resize', this.resize )
         addEventListener( 'mousemove', this.mouseMove )
-        addEventListener( 'mousedown', this.mouseMove )
+        addEventListener( 'mousedown', this.mouseDown )
         this.renderer.domElement.addEventListener( 'wheel', this.scroll )
 
     }
@@ -108,6 +108,11 @@ class PerspectiveGrid {
             this.items[i].mesh.scale.set( 300, 300, 1 )
             this.items[i].mesh.position.set( i % 2 ? 300 : - 300, i % 2 ? 300 : - 300, i * -500 )
 
+            this.items[i].mesh.callback = () => {
+                console.log('im ' + i);
+                
+            }
+
             this.grid.add( this.items[i].mesh )
 
         }
@@ -134,7 +139,20 @@ class PerspectiveGrid {
 
     mouseDown( e ) {
 
+        e.preventDefault();
 
+        this.mouse.x = ( e.clientX / this.renderer.domElement.clientWidth ) * 2 - 1;
+        this.mouse.y = - ( e.clientY / this.renderer.domElement.clientHeight ) * 2 + 1;
+
+        this.raycaster.setFromCamera( this.mouse, this.camera );
+
+        let intersects = this.raycaster.intersectObjects( this.grid.children ); 
+
+        if ( intersects.length > 0 ) {
+
+            intersects[0].object.callback();
+
+        }
 
     }
 
@@ -151,8 +169,8 @@ class PerspectiveGrid {
         this.items.forEach( item => {
 
             // TweenMax.to( item.mesh.rotation, 3, {
-            //     x: this.mouseY * 0.5,
-            //     y: this.mouseX * 0.5,
+            //     x: -this.mouse.y * 0.5,
+            //     y: -this.mouse.x * 0.5,
             //     ease: 'Power4.easeOut',
             // })
 
