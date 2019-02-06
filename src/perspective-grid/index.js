@@ -19,7 +19,9 @@ if (module.hot) {
         cancelAnimationFrame(grid.animationId)
         removeEventListener('resize', grid.resize)
         removeEventListener('mousemove', grid.mouseMove)
+        removeEventListener('touchmove', grid.mouseMove)
         removeEventListener('mousedown', grid.mouseDown)
+        removeEventListener('touchdown', grid.mouseDown)
     })
 }
 
@@ -29,7 +31,6 @@ class PerspectiveGrid {
 
         this.setConfig()
         this.init()
-        this.animate()
 
         this.resize = this.resize.bind( this )
         this.mouseMove = this.mouseMove.bind( this )
@@ -37,7 +38,9 @@ class PerspectiveGrid {
         this.mouseDown = this.mouseDown.bind( this )
         addEventListener( 'resize', this.resize )
         addEventListener( 'mousemove', this.mouseMove )
+        addEventListener( 'touchmove', this.mouseMove )
         addEventListener( 'mousedown', this.mouseDown )
+        addEventListener( 'touchdown', this.mouseDown )
         this.renderer.domElement.addEventListener( 'wheel', this.scroll )
 
     }
@@ -82,130 +85,146 @@ class PerspectiveGrid {
         this.grid = new THREE.Group()
         this.scene.add( this.grid )
 
-        this.items = []
+        let loader = new THREE.FontLoader()
 
-        let x = 0
+        loader.load( 'fonts/helvetiker_regular.typeface.json', font => {
+            
+            this.font = font;
 
-        for( let i = 0; i < 30; i++ ) {
+            this.items = []
 
-            this.items[i] = {}
+            let x = 0
 
-            this.items[i].video = new THREE.VideoTexture( document.getElementById( 'vid' + x ) )
-            this.items[i].video.minFilter = this.items[i].video.magFilter = THREE.LinearFilter        
+            for( let i = 0; i < 30; i++ ) {
 
-            this.items[i].uniforms = {
-                time: { type: 'f', value: 1.0 },
-                fogColor: { type: "c", value: this.scene.fog.color },
-                fogNear: { type: "f", value: this.scene.fog.near },
-                fogFar: { type: "f", value: this.scene.fog.far },
-                video: { type: 't', value: this.items[i].video },
-                opacity: { type: 'f', value: 1.0 }
-            }
+                this.items[i] = {}
 
-            this.items[i].geometry = new THREE.PlaneGeometry( 1, 1 )
-            this.items[i].material = new THREE.ShaderMaterial({
-                uniforms: this.items[i].uniforms,
-                fragmentShader: frag,
-                vertexShader: vert,
-                fog: true,
-                transparent: true
-            })
+                this.items[i].video = new THREE.VideoTexture( document.getElementById( 'vid' + x ) )
+                this.items[i].video.minFilter = this.items[i].video.magFilter = THREE.LinearFilter        
 
-            this.items[i].mesh = new THREE.Mesh( this.items[i].geometry, this.items[i].material )
+                this.items[i].uniforms = {
+                    time: { type: 'f', value: 1.0 },
+                    fogColor: { type: "c", value: this.scene.fog.color },
+                    fogNear: { type: "f", value: this.scene.fog.near },
+                    fogFar: { type: "f", value: this.scene.fog.far },
+                    video: { type: 't', value: this.items[i].video },
+                    opacity: { type: 'f', value: 1.0 }
+                }
 
-            this.items[i].mesh.scale.set( 400, 300, 1 )
+                this.items[i].geometry = new THREE.PlaneGeometry( 1, 1 )
+                this.items[i].material = new THREE.ShaderMaterial({
+                    uniforms: this.items[i].uniforms,
+                    fragmentShader: frag,
+                    vertexShader: vert,
+                    fog: true,
+                    transparent: true
+                })
 
-            let align = i % 4, pos = new THREE.Vector2()
+                this.items[i].mesh = new THREE.Mesh( this.items[i].geometry, this.items[i].material )
 
-            if( align === 0 ) pos.set( -300, 300 ) // bottom left
-            if( align === 1 ) pos.set( 300, 300 ) // bottom right
-            if( align === 2 ) pos.set( 300, -300 ) // top right
-            if( align === 3 ) pos.set( -300, -300 ) // top left
+                this.items[i].mesh.scale.set( 400, 300, 1 )
 
-            this.items[i].mesh.position.set( pos.x, pos.y, i * -300 )
-            this.items[i].origPos = new THREE.Vector2( pos.x, pos.y )
+                let align = i % 4, pos = new THREE.Vector2()
 
-            this.items[i].mesh.callback = () => {
+                if( align === 0 ) pos.set( -350, 350 ) // bottom left
+                if( align === 1 ) pos.set( 350, 350 ) // bottom right
+                if( align === 2 ) pos.set( 350, -350 ) // top right
+                if( align === 3 ) pos.set( -350, -350 ) // top left
 
-                if( this.items[i].active ) {
+                this.items[i].mesh.position.set( pos.x, pos.y, i * -300 )
+                this.items[i].origPos = new THREE.Vector2( pos.x, pos.y )
 
-                    TweenMax.to( this.items[i].mesh.position, 1.5, {
-                        x: this.items[i].origPos.x,
-                        y: this.items[i].origPos.y,
-                        ease: 'Expo.easeInOut'
-                    })
+                this.items[i].labelGeom = new THREE.TextGeometry( 'Item #' + i, {
+                    font: this.font,
+                    size: 14,
+                    height: 0,
+                    curveSegments: 4
+                } )
 
-                    TweenMax.to( this.grid.position, 1.5, {
-                        z: this.origGridPos,
-                        ease: 'Expo.easeInOut'
-                    })
+                this.items[i].labelGeom.center()
 
-                    this.items.forEach( item => {
-    
-                        if( item === this.items[i] ) return
-    
-                        TweenMax.to( item.material.uniforms.opacity, 1.5, {
-                            value: 1,
+                this.items[i].labelMat = new THREE.MeshPhongMaterial( { color: 0x999999, emissive: 0x999999 } )
+
+                this.items[i].label = new THREE.Mesh( this.items[i].labelGeom, this.items[i].labelMat )
+                this.items[i].label.position.set( pos.x, pos.y - 200 , i * -300 )
+
+                this.items[i].mesh.callback = () => {
+
+                    if( this.items[i].active ) {
+
+                        TweenMax.to( this.items[i].mesh.position, 1.5, {
+                            x: this.items[i].origPos.x,
+                            y: this.items[i].origPos.y,
                             ease: 'Expo.easeInOut'
                         })
-    
-                    })
 
-                    this.items[i].active = false
-
-                } else {
-
-                    this.items[i].active = true
-                    this.origGridPos = this.grid.position.z
-
-                    TweenMax.to( this.items[i].mesh.position, 1.5, {
-                        x: 0,
-                        y: 0,
-                        ease: 'Expo.easeInOut'
-                    })
-    
-                    TweenMax.to( this.grid.position, 1.5, {
-                        z: -this.items[i].mesh.position.z + 200,
-                        ease: 'Expo.easeInOut'
-                    })
-    
-                    this.items.forEach( item => {
-    
-                        if( item === this.items[i] ) return
-    
-                        TweenMax.to( item.material.uniforms.opacity, 1.5, {
-                            value: 0,
+                        TweenMax.to( this.grid.position, 1.5, {
+                            z: this.origGridPos,
                             ease: 'Expo.easeInOut'
                         })
-    
-                    })
+
+                        this.items.forEach( item => {
+        
+                            if( item === this.items[i] ) return
+        
+                            TweenMax.to( item.material.uniforms.opacity, 1.5, {
+                                value: 1,
+                                ease: 'Expo.easeInOut'
+                            })
+        
+                        })
+
+                        this.items[i].active = false
+
+                    } else {
+
+                        this.items[i].active = true
+                        this.origGridPos = this.grid.position.z
+
+                        TweenMax.to( this.items[i].mesh.position, 1.5, {
+                            x: 0,
+                            y: 0,
+                            ease: 'Expo.easeInOut'
+                        })
+        
+                        TweenMax.to( this.grid.position, 1.5, {
+                            z: -this.items[i].mesh.position.z + 200,
+                            ease: 'Expo.easeInOut'
+                        })
+        
+                        this.items.forEach( item => {
+        
+                            if( item === this.items[i] ) return
+        
+                            TweenMax.to( item.material.uniforms.opacity, 1.5, {
+                                value: 0,
+                                ease: 'Expo.easeInOut'
+                            })
+        
+                        })
+
+                    }
 
                 }
 
+                this.grid.add( this.items[i].mesh )
+                this.grid.add( this.items[i].label )
+
+                x++
+                if( x === 6 ) x = 0
+
             }
 
-            this.grid.add( this.items[i].mesh )
+            this.animate()
 
-            x++
-            if( x === 6 ) x = 0
-
-        }
-
-        // this.items[0].mesh.scale.set( 300, 500, 1 )
-        // this.items[0].mesh.position.set( -300, -100, 100 )
-
-        // this.items[1].mesh.scale.set( 400, 300, 1 )
-        // this.items[1].mesh.position.set( 100, 0, -400 )
-
-        // this.items[2].mesh.scale.set( 370, 250, 1 )
-        // this.items[2].mesh.position.set( 200, 100, 0 )
+        })
 
     }
 
     scroll( e ) {
 
-        TweenMax.to( this.grid.position, 2, {
-            z: '+=' + e.deltaY * 2,
+        TweenMax.set( this.grid.position, {
+            z: '+=' + e.deltaY,
             ease: 'Power4.easeOut'
         })
 
