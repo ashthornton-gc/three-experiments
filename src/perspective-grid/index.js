@@ -60,14 +60,15 @@ class PerspectiveGrid {
 
     init() {
 
-        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false })
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
         // this.renderer.setPixelRatio( this.c.dpr )
+        this.renderer.setClearColor( 0xAEC7C3, 1 )
         this.renderer.setSize( this.c.size.w, this.c.size.h )
         document.body.appendChild( this.renderer.domElement )
 
         this.scene = new THREE.Scene()
-        this.scene.background = new THREE.Color( 0x000000 )
-        this.scene.fog = new THREE.Fog( 0x000000, 1400, 2000);
+        // this.scene.background = new THREE.Color( 0x000000 )
+        this.scene.fog = new THREE.Fog( 0xAEC7C3, 1400, 2000)
 
         let cameraPosition = 900;
 
