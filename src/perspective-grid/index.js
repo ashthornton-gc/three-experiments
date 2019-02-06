@@ -142,6 +142,7 @@ class PerspectiveGrid {
                     fogFar: { type: "f", value: this.scene.fog.far },
                     video: { type: 't', value: this.items[i].video },
                     opacity: { type: 'f', value: 1.0 },
+                    progress: { type: 'f', value: 0.0 },
                     gradientColor: { type: 'vec3', value: new THREE.Color(0x1b42d8) }
                 }
 
@@ -182,6 +183,11 @@ class PerspectiveGrid {
                             ease: 'Expo.easeInOut'
                         })
 
+                        TweenMax.to( this.items[i].uniforms.progress, 1.5, {
+                            value: 0,
+                            ease: 'Expo.easeInOut'
+                        })
+
                         this.items.forEach( item => {
         
                             if( item === this.items[i] ) return
@@ -203,6 +209,11 @@ class PerspectiveGrid {
                         TweenMax.to( this.items[i].mesh.position, 1.5, {
                             x: 0,
                             y: 0,
+                            ease: 'Expo.easeInOut'
+                        })
+
+                        TweenMax.to( this.items[i].uniforms.progress, 1.5, {
+                            value: 1,
                             ease: 'Expo.easeInOut'
                         })
         
