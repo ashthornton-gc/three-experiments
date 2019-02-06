@@ -56,18 +56,20 @@ class PerspectiveGrid {
             }
         }
 
+        this.colourChanged = false;
+
     }
 
     init() {
 
         this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
         // this.renderer.setPixelRatio( this.c.dpr )
-        this.renderer.setClearColor( 0xAEC7C3, 1 )
+        // this.renderer.setClearColor( 0xAEC7C3, 1 )
         this.renderer.setSize( this.c.size.w, this.c.size.h )
         document.body.appendChild( this.renderer.domElement )
 
         this.scene = new THREE.Scene()
-        // this.scene.background = new THREE.Color( 0x000000 )
+        this.scene.background = new THREE.Color( 0xAEC7C3 )
         this.scene.fog = new THREE.Fog( 0xAEC7C3, 1400, 2000)
 
         let cameraPosition = 900;
@@ -88,15 +90,45 @@ class PerspectiveGrid {
 
         let loader = new THREE.FontLoader()
 
-        loader.load( 'fonts/helvetiker_regular.typeface.json', font => {
+        loader.load( 'fonts/schnyder2.json', font => {
             
             this.font = font;
+
+            this.textGeom = new THREE.TextGeometry( 'January', {
+                font: this.font,
+                size: 200,
+                height: 0,
+                curveSegments: 20
+            } )
+
+            this.textGeom.center()
+
+            this.textMat = new THREE.MeshPhongMaterial( { color: 0x1b42d8, emissive: 0x1b42d8 } )
+
+            this.text = new THREE.Mesh( this.textGeom, this.textMat )
+            this.text.position.set( -5, 0 , -550 )
+
+            this.grid.add( this.text )
+
+            this.textGeom2 = new THREE.TextGeometry( 'February', {
+                font: this.font,
+                size: 200,
+                height: 0,
+                curveSegments: 20
+            } )
+
+            this.textGeom2.center()
+
+            this.text2 = new THREE.Mesh( this.textGeom2, this.textMat )
+            this.text2.position.set( 140, 0 , -2850 )
+
+            this.grid.add( this.text2 )
 
             this.items = []
 
             let x = 0
 
-            for( let i = 0; i < 30; i++ ) {
+            for( let i = 0; i < 300; i++ ) {
 
                 this.items[i] = {}
 
@@ -109,7 +141,8 @@ class PerspectiveGrid {
                     fogNear: { type: "f", value: this.scene.fog.near },
                     fogFar: { type: "f", value: this.scene.fog.far },
                     video: { type: 't', value: this.items[i].video },
-                    opacity: { type: 'f', value: 1.0 }
+                    opacity: { type: 'f', value: 1.0 },
+                    gradientColor: { type: 'vec3', value: new THREE.Color(0x1b42d8) }
                 }
 
                 this.items[i].geometry = new THREE.PlaneGeometry( 1, 1 )
@@ -122,7 +155,6 @@ class PerspectiveGrid {
                 })
 
                 this.items[i].mesh = new THREE.Mesh( this.items[i].geometry, this.items[i].material )
-
                 this.items[i].mesh.scale.set( 400, 300, 1 )
 
                 let align = i % 4, pos = new THREE.Vector2()
@@ -134,20 +166,6 @@ class PerspectiveGrid {
 
                 this.items[i].mesh.position.set( pos.x, pos.y, i * -300 )
                 this.items[i].origPos = new THREE.Vector2( pos.x, pos.y )
-
-                this.items[i].labelGeom = new THREE.TextGeometry( 'Item #' + i, {
-                    font: this.font,
-                    size: 14,
-                    height: 0,
-                    curveSegments: 4
-                } )
-
-                this.items[i].labelGeom.center()
-
-                this.items[i].labelMat = new THREE.MeshPhongMaterial( { color: 0x999999, emissive: 0x999999 } )
-
-                this.items[i].label = new THREE.Mesh( this.items[i].labelGeom, this.items[i].labelMat )
-                this.items[i].label.position.set( pos.x, pos.y - 200 , i * -300 )
 
                 this.items[i].mesh.callback = () => {
 
@@ -209,7 +227,7 @@ class PerspectiveGrid {
                 }
 
                 this.grid.add( this.items[i].mesh )
-                this.grid.add( this.items[i].label )
+                // this.grid.add( this.items[i].label )
 
                 x++
                 if( x === 6 ) x = 0
@@ -296,6 +314,47 @@ class PerspectiveGrid {
         if( this.updatingPerspective ) {
             this.updatePerspective()
             this.updatingPerspective = false
+        }
+
+        if( this.grid.position.z > 1300 && !this.colourChanged ) {
+
+            this.colourChanged = true
+
+            let targetColor = new THREE.Color( 0x012534 )
+            let targetColor2 = new THREE.Color( 0xFD6F53 )
+
+            TweenMax.to( this.scene.fog.color, 3, {
+                r: targetColor.r,
+                g: targetColor.g,
+                b: targetColor.b,
+                ease: 'Expo.easeInOut'
+            })
+
+            TweenMax.to( this.scene.background, 3, {
+                r: targetColor.r,
+                g: targetColor.g,
+                b: targetColor.b,
+                ease: 'Expo.easeInOut'
+            })
+
+            TweenMax.to( [ this.textMat.color, this.textMat.emissive ], 3, {
+                r: targetColor2.r,
+                g: targetColor2.g,
+                b: targetColor2.b,
+                ease: 'Expo.easeInOut'
+            })
+
+            this.items.forEach( item => {
+
+                TweenMax.to( item.uniforms.gradientColor.value, 3, {
+                    r: targetColor.r,
+                    g: targetColor.g,
+                    b: targetColor.b,
+                    ease: 'Expo.easeInOut'
+                })
+
+            })
+
         }
 
         this.renderer.render(this.scene, this.camera)

@@ -6,7 +6,7 @@ uniform float fogNear;
 uniform float fogFar;
 uniform sampler2D video;
 uniform float opacity;
-
+uniform vec3 gradientColor;
 
 void main() {
 
@@ -16,7 +16,7 @@ void main() {
 	vec4 origColor = texture2D(video, vUv);
     float grayscaleValue = dot(origColor.rgb, vec3(0.299, 0.587, 0.114));
 
-	gl_FragColor = mix(vec4(0.1058823529, 0.2588235294, 0.8470588235, 1.0), vec4(1.0, 1.0, 1.0, 1.0), grayscaleValue) * opacity;
+	gl_FragColor = mix(vec4( gradientColor, 1.0), vec4(1.0, 1.0, 1.0, 1.0), grayscaleValue) * opacity;
 
 
 	#ifdef USE_FOG
