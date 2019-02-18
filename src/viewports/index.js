@@ -16,12 +16,14 @@ if (module.hot) {
         renderer.domElement = null
         renderer = null
         cancelAnimationFrame(animationId)
-        removeEventListener('resize', resize)
+        // removeEventListener('resize', resize)
     })
 }
 
 // Three Scene
 var cameraRTT, camera, sceneRTT, sceneScreen, scene, renderer, zmesh1, zmesh2;
+
+let controls
 
 let animationId
 
@@ -41,6 +43,8 @@ function init() {
 
     camera = new THREE.PerspectiveCamera( 30, window.innerWidth / window.innerHeight, 1, 10000 );
     camera.position.z = 100;
+
+    controls = new OrbitControls( camera )
 
     cameraRTT = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, - 10000, 10000 );
     cameraRTT.position.z = 100;
@@ -93,8 +97,8 @@ function init() {
     quad.position.z = - 100;
     sceneScreen.add( quad );
 
-    var n = 5,
-        geometry = new THREE.PlaneBufferGeometry( 20, 20 ),
+    var n = 2,
+        geometry = new THREE.PlaneBufferGeometry( 15, 15 ),
         material2 = new THREE.MeshBasicMaterial( { color: 0xffffff, map: rtTexture.texture } );
 
     for ( var j = 0; j < n; j ++ ) {
@@ -106,8 +110,6 @@ function init() {
             mesh.position.x = ( i - ( n - 1 ) / 2 ) * 20;
             mesh.position.y = ( j - ( n - 1 ) / 2 ) * 20;
             mesh.position.z = 0;
-
-            mesh.rotation.y = - Math.PI / 2;
 
             scene.add( mesh );
 
@@ -147,15 +149,14 @@ function render() {
 
     var time = Date.now() * 0.0015;
 
-    camera.position.x += ( mouseX - camera.position.x ) * .05;
-    camera.position.y += ( - mouseY - camera.position.y ) * .05;
+    // camera.position.x += ( mouseX - camera.position.x ) * .05;
+    // camera.position.y += ( - mouseY - camera.position.y ) * .05;
 
     camera.lookAt( scene.position );
 
-    if ( zmesh1 && zmesh2 ) {
+    if ( zmesh1 ) {
 
         zmesh1.rotation.y = - time;
-        zmesh2.rotation.y = - time + Math.PI / 2;
 
     }
 
