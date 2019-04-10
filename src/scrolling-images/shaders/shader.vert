@@ -1,10 +1,26 @@
+#define PI 3.14159265359
 varying vec2 vUv;
+varying vec3 vPos;
+varying vec3 vNormal;
+varying vec3 objectNormal;
 
-uniform float time;
+uniform float u_delta;
+uniform float u_time;
 
 void main () {
 
+    // vec3 pos = position.xyz;
+
     vUv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1 );
+
+    vec3 transformed = vec3(position);
+    float freq = u_delta * 0.05;
+    float amp = 10.;
+    float angle = (u_time * 0.2 + position.y)*freq;
+    transformed.y += sin(angle)*amp;
+    objectNormal = normalize(vec3(0.0,-amp * freq * cos(angle),1.0));
+    vNormal = normalMatrix * objectNormal;
+
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( transformed, 1 );
 
 }

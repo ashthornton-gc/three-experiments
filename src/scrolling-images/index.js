@@ -20,29 +20,26 @@ if (module.hot) {
 
 // Three Scene
 let scene, camera, renderer, animationId, controls
-let uniforms, geometry, material, mesh, mesh2, mesh3, texture
+let uniforms, geometry, material, mesh, mesh2, mesh3, mesh4, mesh5, mesh6, texture
 let scrollPos = 0, scrolling = false
 let startTime = Date.now()
 
 function init() {
     scene = new THREE.Scene()
 
-    camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, 1, 2 )
-    camera.position.z = 1
+    camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, 1, 1000 )
+    camera.position.z = 11
     scene.add( camera )
 
     new THREE.TextureLoader().load('images/nic.jpg', texture => {
 
-        console.log(texture);
-        
-
         uniforms = {
-            time: { type: 'f', value: 1.0 },
-            texture: { type: 't', value: texture },
-            size: { type: 'v2', value: new THREE.Vector2(texture.width, texture.height)}
+            u_time: { type: 'f', value: 1.0 },
+            u_texture: { type: 't', value: texture },
+            u_delta: { type: 'f', value: 0.0 }
         }
     
-        geometry = new THREE.PlaneGeometry(texture.image.width,texture.image.height)
+        geometry = new THREE.PlaneGeometry(300,300, 100, 100)
         material = new THREE.ShaderMaterial({
             uniforms: uniforms,
             fragmentShader: frag,
@@ -56,8 +53,9 @@ function init() {
         scene.add(mesh2)
         scene.add(mesh3)
 
-        // mesh2.position.y = 40
-        // mesh3.position.y = 80
+        mesh.position.z = 10
+        mesh2.position.z = 10
+        mesh3.position.z = 10
     
         renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
         renderer.setPixelRatio( window.devicePixelRatio )
@@ -77,23 +75,24 @@ function animate() {
     animationId = requestAnimationFrame(animate)
 
     let elapsedMilliseconds = Date.now() - startTime
-    uniforms.time.value = elapsedMilliseconds / 100
+    uniforms.u_time.value = elapsedMilliseconds / 100
 
     if( scrolling ) {
 
-        let delta = ( scrollPos - mesh.position.y ) / 12
-        let delta2 = ( scrollPos - mesh2.position.y ) / 10
-        let delta3 = ( scrollPos - mesh3.position.y ) / 8
+        let delta = ( scrollPos - mesh.position.y ) / 14
+        let delta2 = ( scrollPos - mesh2.position.y ) / 12
+        let delta3 = ( scrollPos - mesh3.position.y ) / 10
 
+        uniforms.u_delta.value = Math.abs(delta * 0.1)
         mesh.position.y += delta
         mesh2.position.y += delta2
         mesh3.position.y += delta3
 
-        // if( Math.abs( delta ) > 0.1 ) {
-        //     scrolling = true
-        // } else {
-        //     scrolling = false
-        // }
+        if( Math.abs( delta ) > 0.05 ) {
+            scrolling = true
+        } else {
+            scrolling = false
+        }
 
     }
 
@@ -122,9 +121,12 @@ function scroll( e ) {
 
 // Event listeners
 function resize() {
-    camera.aspect = innerWidth / innerHeight
-    camera.updateProjectionMatrix()
-    renderer.setSize(innerWidth, innerHeight)
+    camera.left = -window.innerWidth / 2;
+    camera.right = window.innerWidth / 2;
+    camera.top = window.innerHeight / 2;
+    camera.bottom = -window.innerHeight / 2;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight)
 }
 
 addEventListener('resize', resize)
