@@ -16,9 +16,9 @@ void main () {
     vec3 transformed = vec3(position);
     float freq = u_delta * 0.01;
     float amp = 10.;
-    float angle = (u_time * 0.2 + position.x)*clamp(freq, 0.0, 0.5);
+    float angle = (u_time * 0.2 + position.x)*clamp(freq, 0.0, 0.05);
     // float angleY = (u_time * 0.2 + position.x)*clamp(freq, 0.0, 0.05);
-    transformed.y += sin(angle)*amp;
+    transformed.y += cos(angle)*amp;
     // transformed.x += sin(angle)*amp*5.;
     // transformed.z += sin(angle)*amp*2.;
     objectNormal = normalize(vec3(0.0,-amp * freq * cos(angle),1.0));
