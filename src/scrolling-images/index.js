@@ -91,8 +91,8 @@ class ImageScroller {
 
         if( scrolling ) {
 
-            let delta = ( scrollPos - mesh.position.y ) / 16
-            let delta2 = ( scrollPos - mesh2.position.y ) / 14
+            let delta = ( scrollPos - mesh.position.y ) / 18
+            let delta2 = ( scrollPos - mesh2.position.y ) / 15
             let delta3 = ( scrollPos - mesh3.position.y ) / 12
 
             uniforms.u_delta.value = Math.abs(delta * 0.1)
