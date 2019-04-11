@@ -50,7 +50,7 @@ class ImageScroller {
                 u_delta: { type: 'f', value: 0.0 }
             }
         
-            geometry = new THREE.PlaneGeometry(texture.image.width/2, texture.image.height/2, 100)
+            geometry = new THREE.PlaneGeometry(texture.image.width/2, texture.image.height/2, 100, 100)
             material = new THREE.ShaderMaterial({
                 uniforms: uniforms,
                 fragmentShader: frag,
