@@ -4,4 +4,5 @@
 // import './blurry'
 // import './perspective-grid'
 // import './viewports'
+// import './template'
 import './scrolling-images'
