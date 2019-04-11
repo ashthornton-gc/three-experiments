@@ -21,18 +21,18 @@ void main () {
     // transformed.x += cos(angle)*amp;
 
     /* Horizontal Wave */
-    // float freq = u_delta * 0.01;
+    // float freq = u_delta * 0.008;
     // float amp = 10.;
     // float angle = (u_time * 0.2 + position.x)*freq;
     // transformed.y += cos(angle)*amp;
 
-    // gl_Position = projectionMatrix * modelViewMatrix * vec4( transformed, 1 );
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( transformed, 1 );
 
-    vec2 waveDir = normalize(vec2( 0.4, 0.3 )); //Direction of wave in X Y plane
+    // vec2 waveDir = normalize(vec2( 1.0, 0.01 )); //Direction of wave in X Y plane
 
-    float wavefrontFactor = dot(position.xy, waveDir) * clamp( u_delta * 0.02, 0., 0.05 );
-    vec2 hor_perturb = 10.0*waveDir*(cos(wavefrontFactor));
+    // float wavefrontFactor = dot(position.xy, waveDir) * clamp( u_delta * 0.02, 0., 0.05 );
+    // vec2 hor_perturb = 10.0*waveDir*(cos(wavefrontFactor));
     
-    gl_Position = projectionMatrix * modelViewMatrix * vec4( position.xy + hor_perturb, 0.0, 1.0);
+    // gl_Position = projectionMatrix * modelViewMatrix * vec4( position.xy + hor_perturb, 0.0, 1.0);
 
 }
